@@ -1,0 +1,2 @@
+I have used RNN LSTM GRU to predict the values. The code is in python. 
+Libraries used are pandas, numpy, keras, tensorflow, scipy, and matplot.
