@@ -1,12 +1,11 @@
 import csv
-  
 
 
 for k in range(300):
     data = []
     final_cloud_cover = []
 
-    with open(f'./pred/{k + 1}/weather_data.csv', "r") as csvfile:
+    with open(f'./to_pred/{k + 1}/weather_data.csv', "r") as csvfile:
             lines = csv.reader(csvfile)
             writer = csv.writer(csvfile)
             for row in lines:
@@ -16,7 +15,7 @@ for k in range(300):
                 if cloud_cover != '-1' and cloud_cover != '-7999':
                     final_cloud_cover.append(row) 
 
-    f = open(f'./pred/{k + 1}/weather_data.csv', 'w',  newline='')
+    f = open(f'./to_pred/{k + 1}/weather_data.csv', 'w',  newline='')
 
     with f:
 

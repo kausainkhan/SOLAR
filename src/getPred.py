@@ -58,7 +58,7 @@ predictions = []
 for i in range(num_folders):
     for k in range(4):
         j = i + 1
-        path = './pred/' + str(j) + '/'
+        path = './to_pred/' + str(j) + '/'
         if k == 0:
             prediction_df = pd.read_csv(path + 'weather_data.csv')
             prediction_df = prediction_df[INPUT_SIGNALS]
@@ -85,7 +85,7 @@ for i in range(len(predictions)):
         l = l + 1
 
 # saving the predictions
-with open(F'./NEW-predictions-batch_size-{BATCH_SIZE}-learning_rate-{LEARNING_RATE}.csv', 'w',  newline='') as csvfile:
+with open(F'./predictions/NEW-predictions-batch_size-{BATCH_SIZE}-learning_rate-{LEARNING_RATE}.csv', 'w',  newline='') as csvfile:
         writer = csv.writer(csvfile)
         for i in range(len(predictions_split)):
             print(predictions_split)
