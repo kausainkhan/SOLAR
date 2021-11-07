@@ -1,20 +1,24 @@
 from keras.models import load_model
-from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 import os
 import csv
 import joblib
 
+# constants
+SEQ_LEN = 30
+FUTURE_PERIOD_PREDICT = 30
+TO_PREDICT = 'Total Cloud Cover [%]'
+INPUT_SIGNALS = ['Global CMP22 (vent/cor) [W/m^2]','Direct sNIP [W/m^2]','Azimuth Angle [degrees]','Tower Dry Bulb Temp [deg C]','Tower Wet Bulb Temp [deg C]','Tower Dew Point Temp [deg C]','Tower RH [%]','Total Cloud Cover [%]','Peak Wind Speed @ 6ft [m/s]','Avg Wind Direction @ 6ft [deg from N]','Station Pressure [mBar]','Precipitation (Accumulated) [mm]','Snow Depth [cm]','Moisture','Albedo (CMP11)']
+BATCH_SIZE = 64
+LEARNING_RATE = 0.001
+
+
 # loading model and scaler
-model = load_model('model/model.h5')
+model = load_model(f'model/NEW-model-batch_size-300-learning_rate-0.0001.h5')
 x_scaler = joblib.load('./scaler/x_scaler.sav')
 y_scaler = joblib.load('./scaler/y_scaler.sav')
 
-# constants
-SEQ_LEN = 124 # change in future
-FUTURE_PERIOD_PREDICT = 30
-TO_PREDICT = 'Total Cloud Cover [%]'
 
 
 
@@ -22,13 +26,23 @@ def get_predictions(prediction_df):
     
     x_pred_scaled = prediction_df
 
-    # Input-signals for the model.
-    x_pred_scaled = np.expand_dims(x_pred_scaled, axis=0)
+    start_idx = 0
+    length = x_pred_scaled.shape[0]
 
-    # # Use the model to predict the output-signals.
+    # End-index for the sequences.
+    end_idx = start_idx + length
+    
+    # Select the sequences from the given start-index and
+    # of the given length.
+    x_pred_scaled = x_pred_scaled[start_idx:end_idx]
+    
+    # Input-signals for the model.
+    x_pred_scaled = np.expand_dims(x, axis=0)
+
+    # Use the model to predict the output-signals.
     y_pred = model.predict(x_pred_scaled)
     
-    # rescale the predictions
+    # "Unscaling" the data
     y_pred_rescaled = y_scaler.inverse_transform(y_pred[0])
     
     return (y_pred_rescaled)
@@ -47,11 +61,11 @@ for i in range(num_folders):
         path = './pred/' + str(j) + '/'
         if k == 0:
             prediction_df = pd.read_csv(path + 'weather_data.csv')
-            prediction_df = prediction_df[TO_PREDICT]
+            prediction_df = prediction_df[INPUT_SIGNALS]
             x = prediction_df
-            #scaling the predictions
-            x_pred = x.values.reshape(-1, 1)
-            x_pred_scaled = x_scaler.fit_transform(x_pred)
+            # #scaling the predictions
+            # x_pred = x.values.reshape(1, -1)
+            x_pred_scaled = x_scaler.fit_transform(x)
             prediction_df = x_pred_scaled
         # print(i)
         initial_prediction = get_predictions(prediction_df)
@@ -71,7 +85,7 @@ for i in range(len(predictions)):
         l = l + 1
 
 # saving the predictions
-with open('./test.csv', 'w',  newline='') as csvfile:
+with open(F'./NEW-predictions-batch_size-{BATCH_SIZE}-learning_rate-{LEARNING_RATE}.csv', 'w',  newline='') as csvfile:
         writer = csv.writer(csvfile)
         for i in range(len(predictions_split)):
             print(predictions_split)
